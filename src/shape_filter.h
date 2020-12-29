@@ -1,41 +1,42 @@
 #pragma once
-#include "filter.h"
 #include "shape.h"
+#include "filter.h"
 #include <list>
 
 typedef bool (*FilterFunction)(Shape *);
-
-class ShapeFilter : public Filter{
+class ShapeFilter : public Filter {
 public:
-    ShapeFilter(FilterFunction f):_f(f) {
-
-    }
-
+    ShapeFilter(FilterFunction pred): _pred(pred) {}
+        // Predicate is a template name for lambda,
+        //  you may use your own name.
     Filter* setNext(Filter* filter) {
+        // seeting next filter.
         _next = filter;
         return _next;
     }
 
     std::list<Shape*> push(std::list<Shape*> shapes) {
-        std::list<Shape*> filtered = {};
-        for(std::list<Shape*>::iterator it = shapes.begin(); it != shapes.end(); it++){
-            std::cout<<"area: "<<std::to_string((*it)->area())<<std::endl;
-            std::cout<<"id: "<<(*it)->id()<<std::endl;
-            if(_f(*it)){
-                filtered.push_back(*it);
-            }
+        // push down filtered data and return result.
+      std::list<Shape *> _shapes = {};
+      for(std::list<Shape *>::iterator it= shapes.begin(); it != shapes.end(); it++){
+        if(_pred(*it)){
+          // std::cout << "pass: " << (*it)->id() <<std::endl;
+          _shapes.push_back((*it));
         }
-        if(_next){
-            return _next->push(filtered);
-        }
-        for(auto r: filtered){
-            std::cout<<"============in result==========="<<std::endl;
-            std::cout<<"area: "<<std::to_string(r->area())<<std::endl;
-            std::cout<<"id: "<<r->id()<<std::endl;
-        }
-        return filtered;
-    }
+      }
+
+      if(_next){
+        // std::cout<< "get next" << std::endl;
+        return _next->push(_shapes);
+      }
+      // std::cout << _shapes.size() << std::endl;
+      return _shapes;
+      // for(auto i: _shapes){
+      //   std::cout << i->area() << std::endl;
+      // }
+  }
+
 private:
-    FilterFunction _f;
-    Filter * _next = nullptr;
+  FilterFunction _pred;
+  Filter * _next = nullptr;
 };
