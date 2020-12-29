@@ -19,16 +19,15 @@ public:
 
     std::list<Shape*> push(std::list<Shape*> shapes) {
         for(std::list<Shape*>::iterator it = shapes.begin(); it != shapes.end(); ++it){
-                _f(*it);
-                filtered.push_back(*it);
+            _f(*it);
         }
         if(_next){
-            return _next->push(filtered);
+            return _next->push(shapes);
         }
-        return filtered;
+        return shapes;
     }
 private:
     SetterFunction _f;
     Filter * _next = nullptr;
-    std::list<Shape*> filtered;
+    // std::list<Shape*> filtered;
 };

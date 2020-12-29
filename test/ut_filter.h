@@ -22,7 +22,7 @@ class FilterTestSuite: public testing::Test {
         // triangle_3 = new Triangle("3", coordinates_1);
 
         // shapes.push_back(ellipse_1);
-        // shapes.push_back(rectangle_2);
+        shapes.push_back(rectangle_2);
         // shapes.push_back(triangle_3);
         // compoundShape_7 = new CompoundShape("7", shapes);
 
@@ -32,7 +32,8 @@ class FilterTestSuite: public testing::Test {
         // coordinates_2.push_back(new TwoDimensionalCoordinate(0, 4));
 
         // ellipse_4 = new Ellipse("4", 4.2, 3.7);
-        rectangle_5 = new Rectangle("5", 3.7, 4.2);
+        rectangle_5 = new Rectangle("5", 5, 4);
+        shapes.push_back(rectangle_5);
         // triangle_6 = new Triangle("6", coordinates_2);
     }
 
@@ -51,11 +52,15 @@ class FilterTestSuite: public testing::Test {
 TEST_F(FilterTestSuite, customized_filter){
     Filter* areaFilter = new ShapeFilter([](Shape* shape) {return shape->area() <= 30;});
     Filter* perimeterFilter = new ShapeFilter([](Shape* shape) {return shape->perimeter() >= 15;});
-    Filter* colorFilter = new ShapeFilter([](Shape* shape) {return shape->color() == "black";});
+    Filter* colorFilter = new ShapeFilter([](Shape* shape) {return shape->color() == "white";});
     areaFilter->setNext(perimeterFilter)->setNext(colorFilter);
+    areaFilter;
     std::list<Shape*> results = areaFilter->push(shapes);
+    for(auto s:shapes){
+        std::cout<<s->area()<<std::endl;
+    }
     
-    ASSERT_EQ(0, results.size());
+    ASSERT_EQ(1, results.size());
 }
 
 TEST_F(FilterTestSuite, shape_setter_filter){
