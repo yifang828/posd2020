@@ -14,6 +14,7 @@ public:
 
     Filter* setNext(Filter* filter) {
         _next = filter;
+        return _next;
     }
 
     std::list<Shape*> push(std::list<Shape*> shapes) {
@@ -22,7 +23,7 @@ public:
                 filtered.push_back(*it);
         }
         if(_next){
-            return this->_next->push(filtered);
+            return _next->push(filtered);
         }
         return filtered;
     }
