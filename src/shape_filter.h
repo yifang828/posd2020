@@ -19,12 +19,19 @@ public:
     std::list<Shape*> push(std::list<Shape*> shapes) {
         std::list<Shape*> filtered = {};
         for(std::list<Shape*>::iterator it = shapes.begin(); it != shapes.end(); it++){
+            std::cout<<"area: "<<std::to_string((*it)->area())<<std::endl;
+            std::cout<<"id: "<<(*it)->id()<<std::endl;
             if(_f(*it)){
                 filtered.push_back(*it);
             }
         }
         if(_next){
             return _next->push(filtered);
+        }
+        for(auto r: filtered){
+            std::cout<<"============in result==========="<<std::endl;
+            std::cout<<"area: "<<std::to_string(r->area())<<std::endl;
+            std::cout<<"id: "<<r->id()<<std::endl;
         }
         return filtered;
     }
