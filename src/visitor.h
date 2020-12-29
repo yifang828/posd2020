@@ -1,13 +1,19 @@
 #ifndef VISITOR_H
 #define VISITOR_H
 
-class App;
-class Folder;
+class Rectangle;
+class Ellipse;
+class Triangle;
+class CompoundShape;
 
 class Visitor {
 public:
-    virtual void visitApp(App* app) = 0;
+    virtual void visit(Ellipse* ellipse) = 0;
 
-    virtual void visitFolder(Folder* folder) = 0;
+    virtual void visit(Triangle* triangle) = 0;
+
+    virtual void visit(Rectangle* rectangle) = 0;
+
+    virtual void visit(CompoundShape* compoundShape) = 0;
 };
 #endif

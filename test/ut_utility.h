@@ -1,114 +1,206 @@
-#include "../src/folder.h"
-#include "../src/app.h"
-#include "../src/utility.h"
+#define ABS 0.001
 
-using namespace std;
+#include <gtest/gtest.h>
+#include "../src/ellipse.h"
+#include "../src/rectangle.h"
+#include "../src/triangle.h"
+#include "../src/compound_shape.h"
+#include "../src/utility.h"
 
 class UtlilityTestSuite: public testing::Test {
     protected:
     virtual void SetUp() {
-        firefox = new App("1", "firefox", 62.38);
-        twitter = new App("2", "twitter", 1.16);
-        instagram = new App("3", "instagram", 77.77);
-        netflix = new App("4", "netflix", 495.32);
-        foodpanda = new App("5", "foodpanda", 14.796);
-        messenger = new App("6", "messenger", 79.25);
 
-        favorite = new Folder("7", "favorite");
-        common = new Folder("8", "common");
-        community = new Folder("9", "community");
-        trash = new Folder("10", "trash");
-        addNodes();
+        ellipse_1 = new Ellipse("1", 4.2, 3.7, "red");
+        rectangle_2 = new Rectangle("2", 2, 2, "blue");
+
+        std::vector<TwoDimensionalCoordinate*> triangle_3_coordinates;
+        triangle_3_coordinates.push_back(new TwoDimensionalCoordinate(0, 0));
+        triangle_3_coordinates.push_back(new TwoDimensionalCoordinate(0, -3));
+        triangle_3_coordinates.push_back(new TwoDimensionalCoordinate(-4, 0));
+        triangle_3 = new Triangle("3", triangle_3_coordinates, "yellow");
+
+        ellipse_4 = new Ellipse("4", 4.2, 3.7, "yellow");
+        rectangle_5 = new Rectangle("5", 2, 2, "blue");
+
+        std::vector<TwoDimensionalCoordinate*> triangle_6_coordinates;
+        triangle_6_coordinates.push_back(new TwoDimensionalCoordinate(0, 0));
+        triangle_6_coordinates.push_back(new TwoDimensionalCoordinate(0, -3));
+        triangle_6_coordinates.push_back(new TwoDimensionalCoordinate(-4, 0));
+        triangle_6 = new Triangle("6", triangle_6_coordinates, "red");
+
+        std::list<Shape*> shapes = {};
+        shapes.push_back(ellipse_1);
+        shapes.push_back(rectangle_2);
+        shapes.push_back(triangle_3);
+        compoundShape_7 = new CompoundShape("7", shapes);
+
+        shapes.clear();
+        shapes.push_back(ellipse_4);
+        compoundShape_8 = new CompoundShape("8", shapes);
+
+        shapes.clear();
+        shapes.push_back(rectangle_5);
+        shapes.push_back(triangle_6);
+        compoundShape_9 = new CompoundShape("9", shapes);
+
+        compoundShape_8->addShape(compoundShape_9);
+        compoundShape_7->addShape(compoundShape_8);
     }
 
-    void addNodes() {
-        favorite->addNode(firefox);
-        favorite->addNode(twitter);
-        favorite->addNode(common);
-        common->addNode(instagram);
-        common->addNode(community);
-        common->addNode(netflix);
-        community->addNode(foodpanda);
-        community->addNode(messenger);
-        community->addNode(trash);
+    virtual void TearDown() {}
 
-    }
-
-    Node* firefox;
-    Node* twitter;
-    Node* instagram;
-    Node* netflix;
-    Node* foodpanda;
-    Node* messenger;
-
-    Node* favorite;
-    Node* common;
-    Node* community;
-    Node* trash;
+    Shape* ellipse_1;
+    Shape* rectangle_2;
+    Shape* triangle_3;
+    Shape* ellipse_4;
+    Shape* rectangle_5;
+    Shape* triangle_6;
+    Shape* compoundShape_7;
+    Shape* compoundShape_8;
+    Shape* compoundShape_9;
 };
 
-TEST_F(UtlilityTestSuite, exception_for_app_filter_by_size) {
+TEST_F(UtlilityTestSuite, exception_for_rectangle_get_shape_by_id) {
     try {
-        filterNode(firefox, SizeFilter(100, 1));
+        getShapeById(rectangle_2, "1");
         FAIL();
-    }catch(string e) {
-        ASSERT_EQ("Only folder can filter node!", e);
+    }catch(std::string e) {
+        ASSERT_EQ("Only compound shape can get shape!", e);
     }
 }
 
-TEST_F(UtlilityTestSuite, folder_filter_by_size_between_80_and_50) {
-    deque<Node *> nodes = filterNode(favorite, SizeFilter(142.56, 74));
+TEST_F(UtlilityTestSuite, exception_for_rectangle_filter_shape) {
+    try {
+        filterShape(rectangle_2, AreaFilter(12, 1));
+        FAIL();
+    }catch(std::string e) {
+        ASSERT_EQ("Only compound shape can filter shape!", e);
+    }
+}
 
-    ASSERT_EQ(3, nodes.size());
+TEST_F(UtlilityTestSuite, exception_for_ellipse_get_shape_by_id) {
+    try {
+        getShapeById(ellipse_1, "1");
+        FAIL();
+    }catch(std::string e) {
+        ASSERT_EQ("Only compound shape can get shape!", e);
+    }
+}
+
+TEST_F(UtlilityTestSuite, exception_for_ellipse_filter_shape) {
+    try {
+        filterShape(rectangle_2, AreaFilter(12, 1));
+        FAIL();
+    }catch(std::string e) {
+        ASSERT_EQ("Only compound shape can filter shape!", e);
+    }
+}
+
+TEST_F(UtlilityTestSuite, exception_for_triangle_get_shape_by_id) {
+    try {
+        getShapeById(triangle_3, "1");
+        FAIL();
+    }catch(std::string e) {
+        ASSERT_EQ("Only compound shape can get shape!", e);
+    }
+}
+
+TEST_F(UtlilityTestSuite, exception_for_triangle_filter_shape) {
+    try {
+        filterShape(triangle_3, ColorFilter("Yellow"));
+        FAIL();
+    }catch(std::string e) {
+        ASSERT_EQ("Only compound shape can filter shape!", e);
+    }
+}
+
+TEST_F(UtlilityTestSuite, compound_shape_get_shape_by_id) {
+    Shape *shape = getShapeById(compoundShape_7, "1");
+
+    EXPECT_EQ("1", shape->id());
+    EXPECT_EQ("red", shape->color());
+    EXPECT_NEAR(48.820, shape->area(), ABS);
+    EXPECT_NEAR(25.247, shape->perimeter(), ABS);
+    EXPECT_EQ("Ellipse (4.200, 3.700)", shape->info());
+
+    shape = getShapeById(compoundShape_7, "2");
     
-    EXPECT_EQ("3", nodes[0]->id());
-    EXPECT_DOUBLE_EQ(77.77, nodes[0]->size());
+    EXPECT_EQ("2", shape->id());
+    EXPECT_EQ("blue", shape->color());
+    EXPECT_NEAR(4, shape->area(), ABS);
+    EXPECT_NEAR(8, shape->perimeter(), ABS);
+    EXPECT_EQ("Rectangle (2.000, 2.000)", shape->info());
 
-    EXPECT_EQ("9", nodes[1]->id());
-    EXPECT_DOUBLE_EQ(94.046, nodes[1]->size());
+    shape = getShapeById(compoundShape_7, "3");
 
-    EXPECT_EQ("6", nodes[2]->id());
-    EXPECT_DOUBLE_EQ(79.25, nodes[2]->size());
+    EXPECT_EQ("3", shape->id());
+    EXPECT_EQ("yellow", shape->color());
+    EXPECT_NEAR(6, shape->area(), ABS);
+    EXPECT_NEAR(12, shape->perimeter(), ABS);
+    EXPECT_EQ("Triangle ([0.000, 0.000], [0.000, -3.000], [-4.000, 0.000])", shape->info());
 }
 
-TEST_F(UtlilityTestSuite, folder_filter_by_size_between_999_and_0) {
-    deque<Node *> nodes = filterNode(favorite, SizeFilter(999, 0));
+TEST_F(UtlilityTestSuite, compound_shape_filter_shape_by_area) {
 
-    ASSERT_EQ(9, nodes.size());
+    std::deque<Shape*> results = filterShape(compoundShape_7, AreaFilter(20, 5));
 
-    EXPECT_EQ("1", nodes[0]->id());
-    EXPECT_DOUBLE_EQ(62.38, nodes[0]->size());
+    ASSERT_EQ(3, results.size());
 
-    EXPECT_EQ("2", nodes[1]->id());
-    EXPECT_DOUBLE_EQ(1.16, nodes[1]->size());
+    EXPECT_EQ("3", results[0]->id());
+    EXPECT_EQ("Triangle ([0.000, 0.000], [0.000, -3.000], [-4.000, 0.000])", results[0]->info());
+    EXPECT_NEAR(6, results[0]->area(), ABS);
 
-    EXPECT_EQ("8", nodes[2]->id());
-    EXPECT_DOUBLE_EQ(667.136, nodes[2]->size());
-
-    EXPECT_EQ("3", nodes[3]->id());
-    EXPECT_DOUBLE_EQ(77.77, nodes[3]->size());
-
-    EXPECT_EQ("9", nodes[4]->id());
-    EXPECT_DOUBLE_EQ(94.046, nodes[4]->size());
-
-    EXPECT_EQ("5", nodes[5]->id());
-    EXPECT_DOUBLE_EQ(14.796, nodes[5]->size());
-
-    EXPECT_EQ("6", nodes[6]->id());
-    EXPECT_DOUBLE_EQ(79.25, nodes[6]->size());
-
-    EXPECT_EQ("10", nodes[7]->id());
-    EXPECT_DOUBLE_EQ(0, nodes[7]->size());
-
-    EXPECT_EQ("4", nodes[8]->id());
-    EXPECT_DOUBLE_EQ(495.32, nodes[8]->size());
+    EXPECT_EQ("9", results[1]->id());
+    EXPECT_EQ("Compound Shape {Rectangle (2.000, 2.000), Triangle ([0.000, 0.000], [0.000, -3.000], [-4.000, 0.000])}", results[1]->info());
+    EXPECT_NEAR(10, results[1]->area(), ABS);
+    
+    EXPECT_EQ("6", results[2]->id());
+    EXPECT_EQ("Triangle ([0.000, 0.000], [0.000, -3.000], [-4.000, 0.000])", results[2]->info());
+    EXPECT_NEAR(6, results[2]->area(), ABS);
 }
 
+TEST_F(UtlilityTestSuite, compound_shape_filter_shape_by_perimeter) {
+    std::deque<Shape*> results = filterShape(compoundShape_7, PerimeterFilter(30, 15));
 
-TEST_F(UtlilityTestSuite, folder_filter_by_size_equal_to_zero) {
-    deque<Node *> nodes = filterNode(favorite, SizeFilter(0, 0));
-    ASSERT_EQ(1, nodes.size());
+    ASSERT_EQ(3, results.size());
 
-    EXPECT_EQ("10", nodes[0]->id());
-    EXPECT_EQ(0, nodes[0]->size());
+    EXPECT_EQ("1", results[0]->id());
+    EXPECT_EQ("Ellipse (4.200, 3.700)", results[0]->info());
+    EXPECT_NEAR(25.247, results[0]->perimeter(), ABS);
+
+    EXPECT_EQ("4", results[1]->id());
+    EXPECT_EQ("Ellipse (4.200, 3.700)", results[1]->info());
+    EXPECT_NEAR(25.247, results[1]->perimeter(), ABS);
+
+    EXPECT_EQ("9", results[2]->id());
+    EXPECT_EQ("Compound Shape {Rectangle (2.000, 2.000), Triangle ([0.000, 0.000], [0.000, -3.000], [-4.000, 0.000])}", results[2]->info());
+    EXPECT_NEAR(20, results[2]->perimeter(), ABS);
+}
+
+TEST_F(UtlilityTestSuite, compound_shape_filter_shape_by_type) {
+    std::deque<Shape*> results = filterShape(compoundShape_7, TypeFilter("Rectangle"));
+
+    ASSERT_EQ(2, results.size());
+
+    EXPECT_EQ("2", results[0]->id());
+    EXPECT_EQ("Rectangle (2.000, 2.000)", results[0]->info());
+
+    EXPECT_EQ("5", results[1]->id());
+    EXPECT_EQ("Rectangle (2.000, 2.000)", results[1]->info());
+}
+
+TEST_F(UtlilityTestSuite, compound_shape_filter_shape_by_color) {
+
+    std::deque<Shape*> results = filterShape(compoundShape_7, ColorFilter("red"));
+
+    ASSERT_EQ(2, results.size());
+
+    EXPECT_EQ("1", results[0]->id());
+    EXPECT_EQ("Ellipse (4.200, 3.700)", results[0]->info());
+    EXPECT_EQ("red", results[0]->color());
+
+    EXPECT_EQ("6", results[1]->id());
+    EXPECT_EQ("Triangle ([0.000, 0.000], [0.000, -3.000], [-4.000, 0.000])", results[1]->info());
+    EXPECT_EQ("red", results[1]->color());
 }

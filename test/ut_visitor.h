@@ -1,122 +1,136 @@
-#include <gtest/gtest.h>
-#include "../src/folder.h"
-#include "../src/app.h"
-#include "../src/find_visitor.h"
+#define ABS 0.001
 
-using namespace std;
-//30%
+#include <gtest/gtest.h>
+#include "../src/ellipse.h"
+#include "../src/rectangle.h"
+#include "../src/triangle.h"
+#include "../src/compound_shape.h"
+#include "../src/area_visitor.h"
+#include "../src/info_visitor.h"
+
 class VisitorTestSuite: public testing::Test {
 protected:
     virtual void SetUp() {
-        favorite = new Folder("1", "favorite");
-        community = new Folder("2", "community");
-        common = new Folder("3", "common");
-        trash = new Folder("4", "trash");
-        others_in_community = new Folder("5", "others");
-        favorite_in_common = new Folder("6", "favorite");
 
-        favorite->addNodes({
-            new App("7", "instagram", 20.21),
-            community,
-            new App("8", "youtube", 70.07),
-            common
-        });
+        std::vector<TwoDimensionalCoordinate*> coordinates_1;
+        coordinates_1.push_back(new TwoDimensionalCoordinate(0, 0));
+        coordinates_1.push_back(new TwoDimensionalCoordinate(3, 0));
+        coordinates_1.push_back(new TwoDimensionalCoordinate(0, 4));
 
-        community->addNodes({
-            new App("9", "facebook", 30.32),
-            new App("10", "instagram", 20.21),
-            new Folder("11", "favorite"),
-            others_in_community
-        });
+        ellipse_1 = new Ellipse("1", 4, 3);
+        rectangle_2 = new Rectangle("2", 3, 4);
+        triangle_3 = new Triangle("3", coordinates_1);
 
-        common->addNodes({
-            new App("12", "instagram", 20.21),
-            new App("13", "line", 60.66),
-            favorite_in_common,
-            new App("14", "twitter", 40.05)
-        });
+        shapes.push_back(ellipse_1);
+        shapes.push_back(rectangle_2);
+        shapes.push_back(triangle_3);
+        compoundShape_7 = new CompoundShape("7", shapes);
 
-        others_in_community->addNodes({
-            new App("15", "twitter", 40.05)
-        });
+        std::vector<TwoDimensionalCoordinate*> coordinates_2;
+        coordinates_2.push_back(new TwoDimensionalCoordinate(0, 0));
+        coordinates_2.push_back(new TwoDimensionalCoordinate(3, 0));
+        coordinates_2.push_back(new TwoDimensionalCoordinate(0, 4));
 
-        favorite_in_common->addNodes({
-            new Folder("16", "others")
-        });
+        ellipse_4 = new Ellipse("4", 4.2, 3.7);
+        rectangle_5 = new Rectangle("5", 3.7, 4.2);
+        triangle_6 = new Triangle("6", coordinates_2);
     }
 
-    Node* favorite;
-    Node* community;
-    Node* common;
-    Node* trash;
+    virtual void TearDown() {}
 
-    Node* favorite_in_common;
-    Node* others_in_community;
+    std::list<Shape*> shapes = {};
+    Shape* ellipse_1;
+    Shape* rectangle_2;
+    Shape* triangle_3;
+    Shape* ellipse_4;
+    Shape* rectangle_5;
+    Shape* triangle_6;
+    Shape* compoundShape_7;
 };
 
-//2%
-TEST(VisitorTest, find_app) {
-    Node *ubereat = new App("1", "ubereat", 40.34);
-    FindVisitor* fv = new FindVisitor("ubereat");
-    ubereat->accept(fv);
 
-    ASSERT_EQ("/ubereat", fv->getResult());
+
+TEST_F(VisitorTestSuite, ellipse_area) {
+    AreaVisitor* v = new AreaVisitor();
+    ellipse_1->accept(v);
+    ASSERT_NEAR(37.699, v->area(), ABS);
 }
 
-//2%
-TEST(VisitorTest, find_folder) {
-    Node *game = new Folder("1", "game");
-
-    FindVisitor* fv = new FindVisitor("game");
-    game->accept(fv);
-
-    ASSERT_EQ("/game", fv->getResult());
+TEST_F(VisitorTestSuite, rectangle_area) {
+    AreaVisitor* v = new AreaVisitor();
+    rectangle_2->accept(v);
+    ASSERT_NEAR(12.000, v->area(), ABS);
 }
 
-//3%
-TEST_F(VisitorTestSuite, find_app_in_folder) {
-    FindVisitor* fv = new FindVisitor("youtube");
-    favorite->accept(fv);
-
-    ASSERT_EQ("/favorite/youtube", fv->getResult());
+TEST_F(VisitorTestSuite, triangle_area) {
+    AreaVisitor* v = new AreaVisitor();
+    triangle_3->accept(v);
+    ASSERT_NEAR(6.000, v->area(), ABS);
 }
 
-//3%
-TEST_F(VisitorTestSuite, find_folder_in_folder) {
-    FindVisitor* fv = new FindVisitor("community");
-    favorite->accept(fv);
-
-    ASSERT_EQ("/favorite/community", fv->getResult());
+TEST_F(VisitorTestSuite, compound_shape_area) {
+    AreaVisitor* v = new AreaVisitor();
+    compoundShape_7->accept(v);
+    ASSERT_NEAR(55.699, v->area(), ABS);
 }
 
-//5%
-TEST_F(VisitorTestSuite, find_node_in_tree_structure_1) {
-    FindVisitor* fv = new FindVisitor("instagram");
-    favorite->accept(fv);
+TEST_F(VisitorTestSuite, compound_shape_area_level_3_tree_structure) {
+    shapes = {};
+    shapes.push_back(ellipse_4);
+    Shape* compoundShape_8 = new CompoundShape("8", shapes);
 
-    ASSERT_EQ("/favorite/instagram\n/favorite/community/instagram\n/favorite/common/instagram", fv->getResult());
+    shapes = {};
+    shapes.push_back(triangle_6);
+    shapes.push_back(rectangle_5);
+    Shape* compoundShape_9 = new CompoundShape("9", shapes);
+
+    compoundShape_8->addShape(compoundShape_9);
+    compoundShape_7->addShape(compoundShape_8);
+
+    AreaVisitor* v = new AreaVisitor();
+    compoundShape_7->accept(v);
+    ASSERT_NEAR(126.059, v->area(), ABS);
 }
 
-//5%
-TEST_F(VisitorTestSuite, find_node_in_tree_structure_2) {
-    FindVisitor* fv = new FindVisitor("twitter");
-    favorite->accept(fv);
-
-    ASSERT_EQ("/favorite/community/others/twitter\n/favorite/common/twitter", fv->getResult());
+TEST_F(VisitorTestSuite, ellipse_info) {
+    InfoVisitor* v = new InfoVisitor();
+    ellipse_1->accept(v);
+    ASSERT_EQ("Ellipse (4.000, 3.000)", v->info());
 }
 
-//5%
-TEST_F(VisitorTestSuite, find_node_in_tree_structure_3) {
-    FindVisitor* fv = new FindVisitor("others");
-    favorite->accept(fv);
-
-    ASSERT_EQ("/favorite/community/others\n/favorite/common/favorite/others", fv->getResult());
+TEST_F(VisitorTestSuite, rectangle_info) {
+    InfoVisitor* v = new InfoVisitor();
+    rectangle_2->accept(v);
+    ASSERT_EQ("Rectangle (3.000, 4.000)", v->info());
 }
 
-//5%
-TEST_F(VisitorTestSuite, find_node_in_tree_structure_4) {
-    FindVisitor* fv = new FindVisitor("favorite");
-    favorite->accept(fv);
+TEST_F(VisitorTestSuite, triangle_info) {
+    InfoVisitor* v = new InfoVisitor();
+    triangle_3->accept(v);
+    ASSERT_EQ("Triangle ([0.000, 0.000], [3.000, 0.000], [0.000, 4.000])", v->info());
+}
 
-    ASSERT_EQ("/favorite\n/favorite/community/favorite\n/favorite/common/favorite", fv->getResult());
+TEST_F(VisitorTestSuite, compound_shape_info) {
+    InfoVisitor* v = new InfoVisitor();
+    compoundShape_7->accept(v);
+    ASSERT_EQ("Compound Shape {Ellipse (4.000, 3.000), Rectangle (3.000, 4.000), Triangle ([0.000, 0.000], [3.000, 0.000], [0.000, 4.000])}", v->info());
+}
+
+
+TEST_F(VisitorTestSuite, compound_shape_info_level_3_tree_structure) {
+    shapes = {};
+    shapes.push_back(ellipse_4);
+    Shape* compoundShape_8 = new CompoundShape("8", shapes);
+
+    shapes = {};
+    shapes.push_back(triangle_6);
+    shapes.push_back(rectangle_5);
+    Shape* compoundShape_9 = new CompoundShape("9", shapes);
+
+    compoundShape_8->addShape(compoundShape_9);
+    compoundShape_7->addShape(compoundShape_8);
+
+    InfoVisitor* v = new InfoVisitor();
+    compoundShape_7->accept(v);
+    ASSERT_EQ("Compound Shape {Ellipse (4.000, 3.000), Rectangle (3.000, 4.000), Triangle ([0.000, 0.000], [3.000, 0.000], [0.000, 4.000]), Compound Shape {Ellipse (4.200, 3.700), Compound Shape {Triangle ([0.000, 0.000], [3.000, 0.000], [0.000, 4.000]), Rectangle (3.700, 4.200)}}}", v->info());
 }
