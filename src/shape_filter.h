@@ -17,7 +17,7 @@ public:
     }
 
     std::list<Shape*> push(std::list<Shape*> shapes) {
-        // std::list<Shape*> filtered = {};
+        std::list<Shape*> filtered = {};
         for(std::list<Shape*>::iterator it = shapes.begin(); it != shapes.end(); ++it){
             if(_f(*it)){
                 filtered.push_back(*it);
@@ -32,5 +32,5 @@ public:
 private:
     FilterFunction _f;
     Filter * _next = nullptr;
-    std::list<Shape*> filtered = {};
+    // std::list<Shape*> filtered = {};
 };
