@@ -29,6 +29,6 @@ public:
     }
 private:
     SetterFunction _f;
-    Filter * _next;
+    Filter * _next = nullptr;
     std::list<Shape*> filtered;
 };
