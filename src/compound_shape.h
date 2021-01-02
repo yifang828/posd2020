@@ -12,7 +12,7 @@ public:
     }
 
     double area() const {
-        double result;
+        double result = 0.0;
         for(std::list<Shape *>::const_iterator i = _shape.begin(); i != _shape.end(); ++i){
             result += (*i)->area();
         }
